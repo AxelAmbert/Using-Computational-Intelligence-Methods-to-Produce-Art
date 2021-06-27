@@ -27,18 +27,25 @@ class CanvasHandler:
         self.remove_previous_joints()
         self.draw_joints()
 
+    def has_right_tags(self, tags):
+        for tag in tags:
+            if tag == 'joint':
+                return True
+        return False
+
     def verify_line_validity(self, event):
         if len(self.lines) == 0:
-            print("cua")
             return True
         overlaps = self.canvas.find_overlapping(event.x, event.y, event.x, event.y)
-        print(overlaps)
-        if len(overlaps) > 0:
-            print(overlaps[0])
-            print(self.canvas.gettags(overlaps[0]))
+        for overlap in overlaps:
+            tags = self.canvas.gettags(overlap)
+            if self.has_right_tags(tags) == True:
+                return True
+        return False
 
     def on_press(self, event):
-        self.verify_line_validity(event)
+        if self.verify_line_validity(event) == False:
+            return
         self.allow_drawing = True
         self.x1, self.y1 = (event.x - 1), (event.y - 1)
 
