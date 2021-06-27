@@ -19,9 +19,9 @@ class CanvasHandler:
         col = self.random_color()
         for line in self.lines:
             x, y = line.get_start()
-            self.canvas.create_rectangle(x - 10, y - 10, x + 10, y + 10,  width=10, outline=col, fill=col, tags='joint')
+            self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5,  width=5, outline=col, fill=col, tags='joint')
             x, y = line.get_end()
-            self.canvas.create_rectangle(x - 10, y - 10, x + 10, y + 10,  width=10, outline=col,fill=col, tags='joint')
+            self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5,  width=5, outline=col,fill=col, tags='joint')
 
     def redraw_joints(self):
         self.remove_previous_joints()
