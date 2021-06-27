@@ -1,6 +1,7 @@
 from tkinter import *
 from CanvasHandler import *
 
+
 class Main:
 
     def __init__(self):
@@ -10,10 +11,6 @@ class Main:
 
     def main(self):
         mainloop()
-
-
-
-
 
 
 if __name__ == "__main__":

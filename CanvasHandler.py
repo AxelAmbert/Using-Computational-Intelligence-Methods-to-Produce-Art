@@ -3,6 +3,7 @@ from Line import *
 import random
 from tkinter.messagebox import showinfo
 
+
 class CanvasHandler:
 
     def random_color(self):
@@ -19,15 +20,17 @@ class CanvasHandler:
     def draw_a_join_not_overlaping(self, x, y):
         col = self.random_color()
 
-        if self.look_for_tags_overlapping([x, y, x, y], ['joint']) == False:
-            self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
+        if self.look_for_tags_overlapping([x, y, x, y], ['joint']) == None:
+            return self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
+        return -1
 
     def draw_joints(self):
         for line in self.lines:
             x, y = line.get_start()
-            self.draw_a_join_not_overlaping(x, y)
+            begin = self.draw_a_join_not_overlaping(x, y)
             x, y = line.get_end()
-            self.draw_a_join_not_overlaping(x, y)
+            end = self.draw_a_join_not_overlaping(x, y)
+            line.set_join_values(begin, end)
 
     def redraw_joints(self):
         self.remove_previous_joints()
@@ -39,33 +42,63 @@ class CanvasHandler:
                 return True
         return False
 
-    def look_for_tags_overlapping(self, pos, tags):
+    def look_for_tags_overlapping(self, pos, tags, debug=False):
         overlaps = self.canvas.find_overlapping(*pos)
         for overlap in overlaps:
             tags_overlap = self.canvas.gettags(overlap)
             for tag in tags:
                 if self.has_right_tags(tags_overlap, tag) == True:
-                    return True
-        return False
-
+                    if debug is True:
+                        print(overlap)
+                    return overlap
+        return None
 
     def verify_line_validity(self, event):
         if len(self.lines) == 0:
             return True
-        return self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'])
+        return self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint']) != None
 
+    def find_line_ownership(self, joint_id):
+        for line in self.lines:
+            if line.has_joint_ownership(joint_id):
+                return line
+        return None
+
+    def set_new_parent_line(self, event):
+        overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=True)
+        if overlap_joint_id is None:
+            print('No overlap_joint_id')
+            return
+        line_ownership = self.find_line_ownership(overlap_joint_id)
+        if line_ownership is None:
+            print('No line_ownership')
+            return
+        self.selected_line = line_ownership
 
     def on_press(self, event):
         if self.verify_line_validity(event) == False:
             return
+        self.set_new_parent_line(event)
         self.allow_drawing = True
         self.x1, self.y1 = (event.x - 1), (event.y - 1)
 
+
+    def create_a_new_line(self):
+        if self.allow_drawing is False:
+            return
+        line = Line(self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
+        if self.selected_line is not None:
+            self.selected_line.add_a_link(line)
+        self.lines.append(line)
+
     def on_release(self, _):
+        self.create_a_new_line()
         self.allow_drawing = False
         self.drawn_line_tmp = -1
-        self.lines.append(Line([self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp))
+        self.selected_line = None
         self.redraw_joints()
+        for line in self.lines:
+            print(line)
 
     def on_move(self, event):
         if self.allow_drawing == False:
@@ -94,3 +127,4 @@ class CanvasHandler:
         self.x1, self.x2, self.y1, self.y2 = 0, 0, 0, 0
         self.drawn_line_tmp = 0
         self.lines = []
+        self.selected_line = None
