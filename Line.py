@@ -6,6 +6,7 @@ class Line:
 
     def __init__(self, parent, positions, tag):
         Line.x = Line.x + 1
+        self.parent = parent
         self.id = Line.x
         self.connections = []
         self.pos_x_start = positions[0]

@@ -1,6 +1,7 @@
 class Connection:
 
-    def __init__(self, parent, child, based_on):
+    def __init__(self, parent, child, parent_from, child_to):
         self.parent = parent
         self.child = child
-        self.based_on = based_on
+        self.parent_from = parent_from
+        self.child_to = child_to
