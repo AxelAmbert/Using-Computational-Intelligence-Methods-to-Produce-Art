@@ -2,15 +2,12 @@ from Connection import Connection
 
 
 class Line:
-
     x = 0
 
     def __init__(self, parent, positions, tag):
         Line.x = Line.x + 1
         self.id = Line.x
-        self.parent = parent
-        self.begin_connections = []
-        self.end_connections = []
+        self.connections = []
         self.pos_x_start = positions[0]
         self.pos_x_end = positions[1]
         self.pos_y_start = positions[2]
@@ -23,7 +20,7 @@ class Line:
         self.begin_connections.append(line)
 
     def add_a_link_end(self, line):
-        self.end_connections.append(line)
+        self.connections.append(Connection(self, line, "end"))
 
     def get_start(self):
         return self.pos_x_start, self.pos_y_start
@@ -44,8 +41,8 @@ class Line:
     def get_id(self):
         return self.id
 
-    def set_id(self, newId):
-        self.id = newId
+    def set_id(self, new_id):
+        self.id = new_id
 
     def get_pos(self):
         return self.pos_x_start, self.pos_y_start, self.pos_x_end, self.pos_y_end
@@ -56,9 +53,24 @@ class Line:
         self.pos_x_end = pos[2]
         self.pos_y_end = pos[3]
 
+    def update_on_end(self, line):
+        self.pos_x_end = line.pos_x_start
+        self.pos_y_end = line.pos_y_start
+
+    def update_on_start(self, line):
+        self.pos_x_start = line.pos_x_end
+        self.pos_y_start = line.pos_y_end
+        return
+
+    def compute_update(self, connection):
+        if connection.based_on == 'end':
+            self.update_on_end(connection.parent)
+        else:
+            self.update_on_start(connection.parent)
+
     def update_connections(self):
-        for connection in self.begin_connections:
-            connection.compute_parent_update()
+        for connection in self.connections:
+            connection.child.compute_update(connection)
 
     def compute_parent_update(self):
         self.pos_x_start = self.parent.pos_x_end
@@ -71,10 +83,7 @@ class Line:
 
     def move_pos(self, x, y):
         self.set_pos([self.pos_x_start + x, self.pos_y_start + y, self.pos_x_end + x, self.pos_y_end + y])
-        if self.parent is not None:
-            self.parent.compute_child_update(self)
         self.update_connections()
-
 
     def __str__(self):
         string = 'Id :' + str(self.id) + ' | Connections: '

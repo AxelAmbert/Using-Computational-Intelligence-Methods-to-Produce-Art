@@ -47,6 +47,7 @@ class Main:
         threading.Timer(0.01, self.rand).start()
 
 
+
     def main(self):
         mainloop()
 
