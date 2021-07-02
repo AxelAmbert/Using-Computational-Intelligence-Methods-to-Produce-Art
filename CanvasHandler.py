@@ -18,7 +18,7 @@ class CanvasHandler:
             self.canvas.delete(tag)
 
     def draw_a_join_not_overlaping(self, x, y):
-        col = self.random_color()
+        col = "#476042"
 
         if self.look_for_tags_overlapping([x, y, x, y], ['joint']) == None:
             return self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
@@ -67,11 +67,9 @@ class CanvasHandler:
     def set_new_parent_line(self, event):
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=True)
         if overlap_joint_id is None:
-            print('No overlap_joint_id')
             return
         line_ownership = self.find_line_ownership(overlap_joint_id)
         if line_ownership is None:
-            print('No line_ownership')
             return
         self.selected_line = line_ownership
 
@@ -88,7 +86,7 @@ class CanvasHandler:
             return
         line = Line(self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
         if self.selected_line is not None:
-            self.selected_line.add_a_link(line)
+            self.selected_line.add_a_link_begin(line)
         self.lines.append(line)
 
     def on_release(self, _):
@@ -101,7 +99,7 @@ class CanvasHandler:
             print(line)
 
     def on_move(self, event):
-        if self.allow_drawing == False:
+        if self.allow_drawing is False:
             return
 
         self.x2, self.y2 = (event.x + 1), (event.y + 1)
@@ -117,6 +115,15 @@ class CanvasHandler:
         self.canvas.bind("<B1-ButtonRelease>", self.on_release)
         self.canvas.bind("<ButtonPress-1>", self.on_press)
         self.canvas.bind("<ButtonPress-2>", self.overlap)
+
+    def get_lines(self):
+        return self.lines
+
+    def recompute_canvas(self):
+        self.canvas.delete("all")
+        for line in self.lines:
+            self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
+        self.redraw_joints()
 
     def __init__(self, master):
         self.canvas = Canvas(master,
