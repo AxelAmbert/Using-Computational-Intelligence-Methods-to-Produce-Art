@@ -1,5 +1,6 @@
 from tkinter import *
 from Line import *
+from Joint import *
 import random
 from tkinter.messagebox import showinfo
 
@@ -79,7 +80,6 @@ class CanvasHandler:
         self.set_new_parent_line(event)
         self.allow_drawing = True
         self.x1, self.y1 = (event.x - 1), (event.y - 1)
-
 
     def create_a_new_line(self):
         if self.allow_drawing is False:

@@ -2,7 +2,6 @@ from Connection import Connection
 
 
 class Line:
-    x = 0
 
     def __init__(self, parent, positions, tag):
         Line.x = Line.x + 1
@@ -16,6 +15,7 @@ class Line:
         self.tag = tag
         self.joint_begin = -1
         self.joint_end = -1
+
 
     def add_a_link_begin(self, line):
         self.begin_connections.append(line)
@@ -37,7 +37,7 @@ class Line:
         return self.joint_begin, self.joint_end
 
     def has_joint_ownership(self, joint_id):
-        return joint_id == self.joint_begin or joint_id == self.joint_end
+        return joint_id == self.joint_begin.joint_id or joint_id == self.joint_end.joint_id
 
     def get_id(self):
         return self.id
