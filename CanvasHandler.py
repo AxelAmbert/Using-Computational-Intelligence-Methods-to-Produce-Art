@@ -1,6 +1,8 @@
 from tkinter import *
 from Line import *
+from Joint import *
 import random
+
 from tkinter.messagebox import showinfo
 
 
@@ -21,8 +23,10 @@ class CanvasHandler:
         col = "#476042"
 
         if self.look_for_tags_overlapping([x, y, x, y], ['joint']) == None:
-            return self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
-        return -1
+            id_value = self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
+            self.canvas.addtag_withtag(id_value, id_value)
+            return id_value
+        return None
 
     def draw_joints(self):
         for line in self.lines:
@@ -30,7 +34,7 @@ class CanvasHandler:
             begin = self.draw_a_join_not_overlaping(x, y)
             x, y = line.get_end()
             end = self.draw_a_join_not_overlaping(x, y)
-            line.set_join_values(begin, end)
+            line.set_join_values(Joint(line, begin, 'begin'), Joint(line, end, 'end'))
 
     def redraw_joints(self):
         self.remove_previous_joints()
@@ -46,6 +50,7 @@ class CanvasHandler:
         overlaps = self.canvas.find_overlapping(*pos)
         for overlap in overlaps:
             tags_overlap = self.canvas.gettags(overlap)
+            print(tags_overlap)
             for tag in tags:
                 if self.has_right_tags(tags_overlap, tag) == True:
                     if debug is True:
@@ -95,8 +100,6 @@ class CanvasHandler:
         self.drawn_line_tmp = -1
         self.selected_line = None
         self.redraw_joints()
-        for line in self.lines:
-            print(line)
 
     def on_move(self, event):
         if self.allow_drawing is False:

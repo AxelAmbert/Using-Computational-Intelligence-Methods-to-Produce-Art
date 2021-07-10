@@ -16,8 +16,8 @@ class Line:
         self.pos_y_start = positions[2]
         self.pos_y_end = positions[3]
         self.tag = tag
-        self.joint_begin = -1
-        self.joint_end = -1
+        self.joint_begin = None
+        self.joint_end = None
 
     def add_a_link_begin(self, line):
         self.begin_connections.append(line)
@@ -39,10 +39,11 @@ class Line:
         return self.joint_begin, self.joint_end
 
     def has_joint_ownership(self, joint_id):
-        return joint_id == self.joint_begin or joint_id == self.joint_end
+        return joint_id == self.joint_begin.id or joint_id == self.joint_end.id
 
     def get_id(self):
         return self.id
+
 
     def set_id(self, newId):
         self.id = newId
