@@ -3,11 +3,8 @@ from Connection import Connection
 
 class Line:
 
-    x = 0
-
-    def __init__(self, parent, positions, tag):
-        Line.x = Line.x + 1
-        self.id = Line.x
+    def __init__(self, line_id, parent, positions, tag):
+        self.id = line_id
         self.parent = parent
         self.connections = []
         self.pos_x_start = positions[0]
@@ -17,6 +14,7 @@ class Line:
         self.tag = tag
         self.joint_begin = None
         self.joint_end = None
+        self.redraw = True
 
     def add_connection(self, connection):
         self.connections.append(connection)
@@ -44,7 +42,6 @@ class Line:
     def get_id(self):
         return self.id
 
-
     def set_id(self, newId):
         self.id = newId
 
@@ -52,29 +49,28 @@ class Line:
         return self.pos_x_start, self.pos_y_start, self.pos_x_end, self.pos_y_end
 
     def set_pos(self, pos):
+        if self.pos_x_start != pos[0] or self.pos_y_start != pos[1] or \
+                self.pos_x_end != pos[2] or self.pos_y_end != pos[3]:
+            self.redraw = True
+
         self.pos_x_start = pos[0]
         self.pos_y_start = pos[1]
         self.pos_x_end = pos[2]
         self.pos_y_end = pos[3]
 
-    #
-    # 1
-    # 2
-    # end
-    # begin
-    #
     def compute_connection_update(self, connection, deep):
         x = getattr(connection.parent, 'pos_x_' + connection.connection_parent)
         y = getattr(connection.parent, 'pos_y_' + connection.connection_parent)
         setattr(self, 'pos_x_' + connection.connection_child, x)
         setattr(self, 'pos_y_' + connection.connection_child, y)
+        self.redraw = True
+
         if deep is True:
             self.update_connections(deep=False)
 
     def update_connections(self, deep=True):
         for connection in self.connections:
             connection.child.compute_connection_update(connection, deep)
-
 
     def move_pos(self, xs, ys, xe, ye):
         self.set_pos([self.pos_x_start + xs, self.pos_y_start + ys, self.pos_x_end + xe, self.pos_y_end + ye])
@@ -92,4 +88,3 @@ class Line:
         for connection in self.connections:
             string += connection.__str__()
         return string + '\n'
-

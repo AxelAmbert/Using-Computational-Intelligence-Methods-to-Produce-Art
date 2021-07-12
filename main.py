@@ -11,10 +11,10 @@ class Main:
         return lines[random.randint(0, len(lines) - 1)]
 
     def apply_random_to_line(self, line):
-        xs = random.randint(-50, 50)
-        ys = random.randint(-50, 50)
-        xe = random.randint(-50, 50)
-        ye = random.randint(-50, 50)
+        xs = random.randint(-15, 15)
+        ys = random.randint(-15, 15)
+        xe = random.randint(-15, 15)
+        ye = random.randint(-15, 15)
 
         line.move_pos(xs, ys, xe, ye)
 

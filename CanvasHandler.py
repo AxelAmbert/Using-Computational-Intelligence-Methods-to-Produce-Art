@@ -94,7 +94,7 @@ class CanvasHandler:
     def create_a_new_line(self):
         if self.allow_drawing is False:
             return
-        line = Line(self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
+        line = Line(self.drawn_line_tmp, self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
         self.lines.append(line)
         self.connection_tmp.child = line
         self.connection_tmp.connection_child = 'start'
@@ -110,10 +110,11 @@ class CanvasHandler:
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'])
         overlap_line = self.find_line_ownership(overlap_joint_id)
         if overlap_joint_id is None or \
-           self.double_overlapping_error(overlap_joint_id) is True or \
-           overlap_line is None:
+                self.double_overlapping_error(overlap_joint_id) is True or \
+                overlap_line is None:
             return
-        new_connection = Connection().new(created_line, overlap_line, 'end', overlap_line.get_joint_pos(overlap_joint_id))
+        new_connection = Connection().new(created_line, overlap_line, 'end',
+                                          overlap_line.get_joint_pos(overlap_joint_id))
         created_line.add_connection(new_connection)
         overlap_line.add_connection(new_connection.reverse())
 
@@ -149,10 +150,20 @@ class CanvasHandler:
     def get_lines(self):
         return self.lines
 
-    def recompute_canvas(self, simulation=False):
-        self.canvas.delete("all")
+    def delete_moved_lines(self):
         for line in self.lines:
-            self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
+            if line.redraw is True:
+                print(line.id)
+
+
+    def recompute_canvas(self, simulation=False):
+        #self.canvas.delete("all")
+        for line in self.lines:
+            if line.redraw is True:
+                self.canvas.delete(line.id)
+                print('Je delete ' + str(line.id))
+                line.id = self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
+                line.redraw = False
         if simulation is False:
             self.redraw_joints()
 
