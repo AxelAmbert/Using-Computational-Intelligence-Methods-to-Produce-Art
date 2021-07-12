@@ -1,6 +1,7 @@
 from tkinter import *
 from Line import *
 from Joint import *
+from Connection import *
 import random
 
 from tkinter.messagebox import showinfo
@@ -34,7 +35,7 @@ class CanvasHandler:
             begin = self.draw_a_join_not_overlaping(x, y)
             x, y = line.get_end()
             end = self.draw_a_join_not_overlaping(x, y)
-            line.set_join_values(Joint(line, begin, 'begin'), Joint(line, end, 'end'))
+            line.set_join_values(Joint(line, begin, 'start'), Joint(line, end, 'end'))
 
     def redraw_joints(self):
         self.remove_previous_joints()
@@ -50,7 +51,6 @@ class CanvasHandler:
         overlaps = self.canvas.find_overlapping(*pos)
         for overlap in overlaps:
             tags_overlap = self.canvas.gettags(overlap)
-            print(tags_overlap)
             for tag in tags:
                 if self.has_right_tags(tags_overlap, tag) == True:
                     if debug is True:
@@ -61,7 +61,7 @@ class CanvasHandler:
     def verify_line_validity(self, event):
         if len(self.lines) == 0:
             return True
-        return self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint']) != None
+        return self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint']) is not None
 
     def find_line_ownership(self, joint_id):
         for line in self.lines:
@@ -69,37 +69,64 @@ class CanvasHandler:
                 return line
         return None
 
+    def set_begin_connection(self, line, joint_id):
+        self.connection_tmp.parent = line
+        self.connection_tmp.connection_parent = line.get_joint_pos(joint_id)
+
     def set_new_parent_line(self, event):
-        overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=True)
+        overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=False)
         if overlap_joint_id is None:
             return
         line_ownership = self.find_line_ownership(overlap_joint_id)
         if line_ownership is None:
             return
         self.selected_line = line_ownership
+        self.connection_tmp.parent = line_ownership
+        self.connection_tmp.connection_parent = line_ownership.get_joint_pos(overlap_joint_id)
 
     def on_press(self, event):
-        if self.verify_line_validity(event) == False:
+        if self.verify_line_validity(event) is False:
             return
         self.set_new_parent_line(event)
         self.allow_drawing = True
         self.x1, self.y1 = (event.x - 1), (event.y - 1)
 
-
     def create_a_new_line(self):
         if self.allow_drawing is False:
             return
         line = Line(self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
-        if self.selected_line is not None:
-            self.selected_line.add_a_link_begin(line)
         self.lines.append(line)
+        self.connection_tmp.child = line
+        self.connection_tmp.connection_child = 'start'
+        if self.selected_line is not None:
+            self.selected_line.add_connection(self.connection_tmp)
+            line.add_connection(self.connection_tmp.reverse())
+        return line
 
-    def on_release(self, _):
-        self.create_a_new_line()
+    def double_overlapping_error(self, overlap_joint_id):
+        return self.connection_tmp.parent.has_joint_ownership(overlap_joint_id)
+
+    def look_for_closing_overlap(self, created_line, event):
+        overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'])
+        overlap_line = self.find_line_ownership(overlap_joint_id)
+        if overlap_joint_id is None or \
+           self.double_overlapping_error(overlap_joint_id) is True or \
+           overlap_line is None:
+            return
+        new_connection = Connection().new(created_line, overlap_line, 'end', overlap_line.get_joint_pos(overlap_joint_id))
+        created_line.add_connection(new_connection)
+        overlap_line.add_connection(new_connection.reverse())
+
+    def on_release(self, event):
+        created_line = self.create_a_new_line()
+        self.look_for_closing_overlap(created_line, event)
         self.allow_drawing = False
         self.drawn_line_tmp = -1
         self.selected_line = None
         self.redraw_joints()
+        self.connection_tmp = Connection()
+        for line in self.lines:
+            print(line)
 
     def on_move(self, event):
         if self.allow_drawing is False:
@@ -122,11 +149,12 @@ class CanvasHandler:
     def get_lines(self):
         return self.lines
 
-    def recompute_canvas(self):
+    def recompute_canvas(self, simulation=False):
         self.canvas.delete("all")
         for line in self.lines:
             self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
-        self.redraw_joints()
+        if simulation is False:
+            self.redraw_joints()
 
     def __init__(self, master):
         self.canvas = Canvas(master,
@@ -138,3 +166,4 @@ class CanvasHandler:
         self.drawn_line_tmp = 0
         self.lines = []
         self.selected_line = None
+        self.connection_tmp = Connection()

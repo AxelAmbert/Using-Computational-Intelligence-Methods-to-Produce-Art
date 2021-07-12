@@ -11,9 +11,12 @@ class Main:
         return lines[random.randint(0, len(lines) - 1)]
 
     def apply_random_to_line(self, line):
-        x_e = random.randint(-15, 15)
-        y_e = random.randint(-15, 15)
-        line.move_pos(x_e, y_e)
+        xs = random.randint(-50, 50)
+        ys = random.randint(-50, 50)
+        xe = random.randint(-50, 50)
+        ye = random.randint(-50, 50)
+
+        line.move_pos(xs, ys, xe, ye)
 
 
 
@@ -24,7 +27,7 @@ class Main:
         if line_to_modify is None:
             return
         self.apply_random_to_line(line_to_modify)
-        self.canvas.recompute_canvas()
+        self.canvas.recompute_canvas(simulation=self.sim)
 
 
 
@@ -38,13 +41,19 @@ class Main:
         self.master.title("Biomorphs")
         self.canvas = CanvasHandler(self.master)
         self.button = self.init_button()
+        self.sim = False
 
     def rand(self):
         self.apply_random()
-        threading.Timer(0.01, self.rand).start()
+        if self.sim is True:
+            threading.Timer(0.1, self.rand).start()
 
     def wait_and_start(self):
-        threading.Timer(0.01, self.rand).start()
+        if self.sim is False:
+            self.sim = True
+            threading.Timer(0.0001, self.rand).start()
+        else:
+            self.sim = False
 
 
     def main(self):
