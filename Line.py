@@ -1,6 +1,3 @@
-from Connection import Connection
-
-
 class Line:
 
     def __init__(self, line_id, parent, positions, tag):

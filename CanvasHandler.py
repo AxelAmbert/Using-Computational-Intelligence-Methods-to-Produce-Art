@@ -4,8 +4,6 @@ from Joint import *
 from Connection import *
 import random
 
-from tkinter.messagebox import showinfo
-
 
 class CanvasHandler:
 
@@ -85,7 +83,7 @@ class CanvasHandler:
         self.connection_tmp.connection_parent = line_ownership.get_joint_pos(overlap_joint_id)
 
     def on_press(self, event):
-        if self.verify_line_validity(event) is False:
+        if self.lock_mode is True or self.verify_line_validity(event) is False:
             return
         self.set_new_parent_line(event)
         self.allow_drawing = True
@@ -126,8 +124,6 @@ class CanvasHandler:
         self.selected_line = None
         self.redraw_joints()
         self.connection_tmp = Connection()
-        for line in self.lines:
-            print(line)
 
     def on_move(self, event):
         if self.allow_drawing is False:
@@ -161,11 +157,16 @@ class CanvasHandler:
         for line in self.lines:
             if line.redraw is True:
                 self.canvas.delete(line.id)
-                print('Je delete ' + str(line.id))
                 line.id = self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
                 line.redraw = False
         if simulation is False:
             self.redraw_joints()
+
+    def lock(self):
+        self.lock_mode = True
+
+    def unlock(self):
+        self.lock_mode = False
 
     def __init__(self, master):
         self.canvas = Canvas(master,
@@ -178,3 +179,4 @@ class CanvasHandler:
         self.lines = []
         self.selected_line = None
         self.connection_tmp = Connection()
+        self.lock_mode = False
