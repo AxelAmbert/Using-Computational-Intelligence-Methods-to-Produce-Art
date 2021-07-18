@@ -5,6 +5,7 @@ import random
 import time, threading
 from FramesHandler import *
 from BiomorphCreator import *
+from EvolutionView import *
 
 class SampleApp(tk.Tk):
 
@@ -17,9 +18,9 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (BiomorphCreator, ):
+        for F in (BiomorphCreator, EvolutionView):
             page_name = F.__name__
-            frame = F(parent=container, controller=self)
+            frame = F(parent=container, controller=self,)
             self.frames[page_name] = frame
 
             # put all of the pages in the same location;
@@ -27,13 +28,14 @@ class SampleApp(tk.Tk):
             # will be the one that is visible.
             frame.grid(row=0, column=0, sticky="nsew")
 
+
         self.show_frame("BiomorphCreator")
 
-    def show_frame(self, page_name):
+    def show_frame(self, page_name, data=None):
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
+        frame.update_with_data(data)
         frame.tkraise()
-
 
 
 

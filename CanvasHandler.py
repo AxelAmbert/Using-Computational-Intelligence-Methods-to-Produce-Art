@@ -137,7 +137,6 @@ class CanvasHandler:
         print(self.canvas.find_overlapping(event.x, event.y, event.x, event.y))
 
     def init_canvas(self):
-        self.canvas.pack(expand=YES, fill=BOTH)
         self.canvas.bind("<B1-Motion>", self.on_move)
         self.canvas.bind("<B1-ButtonRelease>", self.on_release)
         self.canvas.bind("<ButtonPress-1>", self.on_press)
@@ -167,6 +166,19 @@ class CanvasHandler:
 
     def unlock(self):
         self.lock_mode = False
+
+    def set_size(self, x, y):
+        self.canvas.config(width=x, height=y)
+
+    def set_grid(self, column, row):
+        self.canvas.grid(column=column, row=row)
+
+    def reconstruct(self, lines):
+        self.drawn_line_tmp = 0
+        self.lines = lines
+        self.selected_line = None
+        self.connection_tmp = Connection()
+        self.recompute_canvas()
 
     def __init__(self, master):
         self.canvas = Canvas(master,

@@ -27,17 +27,13 @@ class BiomorphCreator(tk.Frame):
         self.apply_random_to_line(line_to_modify)
         self.canvas.recompute_canvas(simulation=self.sim)
 
+    def change_view(self):
+        self.controller.show_frame('EvolutionView', self.canvas.lines)
+
     def init_button(self):
-        button = Button(self, text="Press to add random gen", command=self.wait_and_start)
+        button = Button(self, text="Press to add random gen", command=self.change_view)
         button.pack()
         return button
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.canvas = CanvasHandler(self)
-        self.button = self.init_button()
-        self.sim = False
 
     def rand(self):
         self.apply_random()
@@ -50,3 +46,14 @@ class BiomorphCreator(tk.Frame):
             threading.Timer(0.0001, self.rand).start()
         else:
             self.sim = False
+
+    def update_with_data(self, lines):
+        pass
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.canvas = CanvasHandler(self)
+        self.canvas.canvas.pack(expand=YES, fill=BOTH)
+        self.button = self.init_button()
+        self.sim = False
