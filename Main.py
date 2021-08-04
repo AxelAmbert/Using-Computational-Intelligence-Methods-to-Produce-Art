@@ -1,9 +1,4 @@
-import tkinter as tk
 from tkinter import font as tkfont
-from CanvasHandler import *
-import random
-import time, threading
-from FramesHandler import *
 from BiomorphCreator import *
 from EvolutionView import *
 
@@ -12,6 +7,7 @@ class SampleApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        self.resizable(False, False)
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -36,22 +32,6 @@ class SampleApp(tk.Tk):
         frame = self.frames[page_name]
         frame.update_with_data(data)
         frame.tkraise()
-
-
-
-class MainView:
-
-    def __init__(self):
-        self.master = Tk()
-        self.master.title("Biomorphs")
-        self.canvas = CanvasHandler(self.master)
-        self.sim = False
-
-
-    def main(self):
-        m = singleton(FrameHandler)()
-        m.mdr()
-        mainloop()
 
 
 if __name__ == "__main__":

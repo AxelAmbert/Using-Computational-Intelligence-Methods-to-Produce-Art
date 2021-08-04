@@ -12,6 +12,7 @@ class Line:
         self.joint_begin = None
         self.joint_end = None
         self.redraw = True
+        self.genetic_modifier = []
 
     def add_connection(self, connection):
         self.connections.append(connection)
@@ -79,6 +80,21 @@ class Line:
         elif self.joint_end.id == joint_id:
             return self.joint_end.where
         return 'unset'
+
+    # TODO handle 0 division error:
+    def scale(self, old_size, new_size):
+        old_size_x, old_size_y = old_size
+        new_size_x, new_size_y = new_size
+        ratio_x = old_size_x / new_size_x
+        ratio_y = old_size_y / new_size_y
+
+        self.pos_x_start /= ratio_x
+        self.pos_x_end /= ratio_x
+        self.pos_y_start /= ratio_y
+        self.pos_y_end /= ratio_y
+
+    def copy(self):
+        return Line(self.id, self.parent, [self.pos_x_start, self.pos_x_end, self.pos_y_start, self.pos_y_end], self.tag)
 
     def __str__(self):
         string = 'Id :' + str(self.id) + ' | \nConnections: '

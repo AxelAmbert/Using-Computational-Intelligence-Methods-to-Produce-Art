@@ -31,19 +31,19 @@ class BiomorphCreator(tk.Frame):
         self.controller.show_frame('EvolutionView', self.canvas.lines)
 
     def init_button(self):
-        button = Button(self, text="Press to add random gen", command=self.change_view)
+        button = Button(self, text="Press to add random gen", command=self.wait_and_start)
         button.pack()
         return button
 
     def rand(self):
         self.apply_random()
         if self.sim is True:
-            threading.Timer(0, self.rand).start()
+            threading.Timer(0.3, self.rand).start()
 
     def wait_and_start(self):
         if self.sim is False:
             self.sim = True
-            threading.Timer(0.0001, self.rand).start()
+            threading.Timer(0.3, self.rand).start()
         else:
             self.sim = False
 

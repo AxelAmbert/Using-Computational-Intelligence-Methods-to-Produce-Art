@@ -11,9 +11,9 @@ class EvolutionView(tk.Frame):
         for i in range(0, 3):
             for y in range(0, 3):
                 tmp_canvas = CanvasHandler(self)
-                tmp_canvas.set_size(100, 100)
-                tmp_canvas.canvas.grid(column=i, row=y, padx=(50, 50), pady=(50, 50))
-                tmp_canvas.lock()
+                tmp_canvas.set_size(250, 250)
+                tmp_canvas.canvas.grid(column=i, row=y, padx=(50, 50), pady=(25, 25))
+                #tmp_canvas.lock()
                 self.canvas_array.append(tmp_canvas)
 
     def init_slider(self):
@@ -29,12 +29,9 @@ class EvolutionView(tk.Frame):
 
     def update_with_data(self, lines):
         if lines is None:
-            print('cia')
             return
         for canvas in self.canvas_array:
-            print('go')
-            canvas.reconstruct(lines)
-
+            canvas.reconstruct(lines, [100, 100])
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent,  bg='#000000')

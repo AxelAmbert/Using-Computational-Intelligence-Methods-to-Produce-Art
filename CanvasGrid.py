@@ -1,7 +1,6 @@
 import tkinter as tk
 from CanvasHandler import *
-import random
-import time, threading
+
 
 
 class CanvasGrid(tk.Frame):

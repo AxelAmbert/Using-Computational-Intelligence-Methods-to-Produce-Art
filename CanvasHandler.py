@@ -1,7 +1,8 @@
 from tkinter import *
-from Line import *
+from  Line import *
 from Joint import *
 from Connection import *
+from LineSplitGM import *
 import random
 
 
@@ -22,7 +23,11 @@ class CanvasHandler:
         col = "#476042"
 
         if self.look_for_tags_overlapping([x, y, x, y], ['joint']) == None:
-            id_value = self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, width=5, outline=col, fill=col, tags='joint')
+            id_value = self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5,
+                                               width=((self.size[0] + self.size[1]) / 300),
+                                               outline=col,
+                                               fill=col,
+                                               tags='joint')
             self.canvas.addtag_withtag(id_value, id_value)
             return id_value
         return None
@@ -67,10 +72,6 @@ class CanvasHandler:
                 return line
         return None
 
-    def set_begin_connection(self, line, joint_id):
-        self.connection_tmp.parent = line
-        self.connection_tmp.connection_parent = line.get_joint_pos(joint_id)
-
     def set_new_parent_line(self, event):
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=False)
         if overlap_joint_id is None:
@@ -93,6 +94,7 @@ class CanvasHandler:
         if self.allow_drawing is False:
             return
         line = Line(self.drawn_line_tmp, self.selected_line, [self.x1, self.x2, self.y1, self.y2], self.drawn_line_tmp)
+        line.genetic_modifier.append(LineSplitGM(line, self.lines, 0.1))
         self.lines.append(line)
         self.connection_tmp.child = line
         self.connection_tmp.connection_child = 'start'
@@ -131,7 +133,9 @@ class CanvasHandler:
 
         self.x2, self.y2 = (event.x + 1), (event.y + 1)
         self.canvas.delete(self.drawn_line_tmp)
-        self.drawn_line_tmp = self.canvas.create_line(self.x1, self.y1, self.x2, self.y2, width=4, fill="#476042")
+
+        self.drawn_line_tmp = self.canvas.create_line(self.x1, self.y1, self.x2, self.y2,
+                                                      width=(self.size[0] + self.size[1]) / 200, fill="#476042")
 
     def overlap(self, event):
         print(self.canvas.find_overlapping(event.x, event.y, event.x, event.y))
@@ -150,15 +154,22 @@ class CanvasHandler:
             if line.redraw is True:
                 print(line.id)
 
-
     def recompute_canvas(self, simulation=False):
-        #self.canvas.delete("all")
+        force = self.handle_lines_nb_change()
+        # self.canvas.delete("all")
+        if force is True:
+            self.canvas.delete('all')
         for line in self.lines:
-            if line.redraw is True:
+            if line.redraw is True or force is True:
                 self.canvas.delete(line.id)
-                line.id = self.canvas.create_line(*line.get_pos(), width=4, fill="#476042")
+
+                line.id = self.canvas.create_line(*line.get_pos(), width=(self.size[0] + self.size[1]) / 200,
+                                                  fill="#476042")
                 line.redraw = False
-        if simulation is False:
+                for g in line.genetic_modifier:
+                    g.apply_evolution()
+
+        if simulation is False or force is True or True:
             self.redraw_joints()
 
     def lock(self):
@@ -173,14 +184,34 @@ class CanvasHandler:
     def set_grid(self, column, row):
         self.canvas.grid(column=column, row=row)
 
-    def reconstruct(self, lines):
+    def scale_lines(self, new_size):
+        for line in self.lines:
+            line.scale(self.size, new_size)
+
+    def new_line_array(self, lines):
+        arr = []
+
+        for line in lines:
+            arr.append(line.copy())
+        return arr
+
+    def reconstruct(self, lines, new_size):
         self.drawn_line_tmp = 0
-        self.lines = lines
+        self.lines = self.new_line_array(lines)
         self.selected_line = None
         self.connection_tmp = Connection()
+        self.scale_lines(new_size)
+        self.size = new_size
         self.recompute_canvas()
 
+    def handle_lines_nb_change(self):
+        if len(self.lines) != self.lines_nb:
+            self.lines_nb = len(self.lines)
+            return True
+        return False
+
     def __init__(self, master):
+        self.size = [500, 500]
         self.canvas = Canvas(master,
                              width=500,
                              height=500)
@@ -192,3 +223,5 @@ class CanvasHandler:
         self.selected_line = None
         self.connection_tmp = Connection()
         self.lock_mode = False
+        self.done = False
+        self.lines_nb = 0
