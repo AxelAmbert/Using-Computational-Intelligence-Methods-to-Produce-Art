@@ -1,7 +1,9 @@
 from GeneticModifier import *
-from Line import *
+import Line
 from Connection import *
 import random
+import LineCreationGM
+from LineRemoveGM import *
 
 
 def update_linked_connection(old_line, new_line, connected_line):
@@ -55,9 +57,8 @@ class LineSplitGM(GeneticModifier):
                     line2.add_connection(connection)
                     update_linked_connection(self.line, line2, connection.parent)
 
-
     def recreate_connections(self, line1, line2):
-        new_connection = Connection().new(line1, line2, 'end', 'start')
+        new_connection = Connection().new(line1, line2, line1, 'end', 'start')
 
         line1.connections.append(new_connection)
         line2.connections.append(new_connection.reverse())
@@ -72,8 +73,8 @@ class LineSplitGM(GeneticModifier):
         split_xb = x_b + ((x_e - x_b) / 2)
         split_yb = y_b + ((y_e - y_b) / 2)
 
-        line1 = Line(-1, self.line.parent, [x_b, split_xb, y_b, split_yb], '')
-        line2 = Line(-1, line1, [split_xb, x_e, split_yb, y_e], '')
+        line1 = Line.Line(-1, self.line.parent, [x_b, split_xb, y_b, split_yb], '')
+        line2 =  Line.Line(-1, line1, [split_xb, x_e, split_yb, y_e], '')
         self.recreate_connections(line1, line2)
         self.lines.append(line1)
         self.lines.append(line2)
@@ -81,5 +82,8 @@ class LineSplitGM(GeneticModifier):
     def apply_evolution(self):
         if random.random() > self.probability:
             return
-        self.lines.remove(self.line)
+        try:
+            self.lines.remove(self.line)
+        except:
+            pass
         self.create_two_new_lines()

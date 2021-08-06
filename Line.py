@@ -1,3 +1,7 @@
+import LineSplitGM
+from LineCreationGM import *
+import LineRemoveGM
+
 class Line:
 
     def __init__(self, line_id, parent, positions, tag):
@@ -13,6 +17,11 @@ class Line:
         self.joint_end = None
         self.redraw = True
         self.genetic_modifier = []
+
+    def add_genetic_modifier(self, lines):
+        self.genetic_modifier.append(LineRemoveGM.LineRemoveGM(self, lines, 0.01))
+        self.genetic_modifier.append(LineCreationGM(self, lines, 0.05))
+        self.genetic_modifier.append(LineSplitGM.LineSplitGM(self, lines, 0.0001))
 
     def add_connection(self, connection):
         self.connections.append(connection)
@@ -93,8 +102,9 @@ class Line:
         self.pos_y_start /= ratio_y
         self.pos_y_end /= ratio_y
 
-    def copy(self):
+    def copy(self, lines):
         return Line(self.id, self.parent, [self.pos_x_start, self.pos_x_end, self.pos_y_start, self.pos_y_end], self.tag)
+
 
     def __str__(self):
         string = 'Id :' + str(self.id) + ' | \nConnections: '
