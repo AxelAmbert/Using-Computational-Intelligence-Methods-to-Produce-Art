@@ -1,10 +1,22 @@
-class GeneticModifier:
+import random
 
-    def __init__(self, line, lines, propability):
-        self.line = line
-        self.lines = lines
+class GeneticModifier:
+    def __init__(self, propability):
         self.probability = propability
 
-    def update(self, line, lines):
-        self.line = line
-        self.lines = lines
+    def evolve(self, line, lines):
+        return True
+
+    def safe_remove(self, line, lines):
+        try:
+            lines.remove(line)
+        except:
+            pass
+
+    def apply_evolution(self, lines):
+        if len(lines) == 0:
+            return False
+        line = random.choice(lines)
+
+        return self.evolve(line, lines)
+

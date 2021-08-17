@@ -1,19 +1,12 @@
+import time
 from tkinter import *
 from Line import *
 from Joint import *
 from Connection import *
-
+from GeneticModifierHandler import *
 import random
 
-
 class CanvasHandler:
-
-    def random_color(self):
-        t = '#'
-
-        for i in range(0, 6):
-            t += str(random.randint(0, 9))
-        return t
 
     def remove_previous_joints(self):
         for tag in self.canvas.find_withtag('joint'):
@@ -97,14 +90,17 @@ class CanvasHandler:
     def create_a_new_line(self):
         if self.allow_drawing is False:
             return
-        line = Line.Line(self.drawn_line_tmp, self.selected_line, [self.x1, self.x2, self.y1, self.y2],
-                         self.drawn_line_tmp)
+        print('Je create ')
+        line = Line(self.drawn_line_tmp, self.selected_line, [self.x1, self.x2, self.y1, self.y2],
+                    self.drawn_line_tmp)
         self.lines.append(line)
         self.connection_tmp.child = line
         self.connection_tmp.connection_child = 'start'
         if self.selected_line is not None:
-            self.selected_line.add_connection(self.connection_tmp)
+            print("jajoute " + str(self.connection_tmp))
+            self.selected_line.add_connection(self.connection_tmp.copy())
             line.add_connection(self.connection_tmp.reverse())
+        self.on_change()
         return line
 
     def double_overlapping_error(self, overlap_joint_id):
@@ -123,6 +119,8 @@ class CanvasHandler:
         overlap_line.add_connection(new_connection.reverse())
 
     def on_release(self, event):
+        if self.lock_mode is True:
+            return
         created_line = self.create_a_new_line()
         self.look_for_closing_overlap(created_line, event)
         self.allow_drawing = False
@@ -144,42 +142,41 @@ class CanvasHandler:
     def overlap(self, event):
         print(self.canvas.find_overlapping(event.x, event.y, event.x, event.y))
 
-    def select_line(self, event):
+    def select_line(self, _):
         line = self.lines[2]
         line.genetic_modifier[0].apply_evolution(force=True)
         self.recompute_canvas()
+
+    def check(self, event):
+        print("Check " + str(len(self.lines)))
+
+    def get_id(self, event):
+        print(self.canvas.find_overlapping(event.x, event.y, event.x, event.y))
 
     def init_canvas(self):
         self.canvas.bind("<B1-Motion>", self.on_move)
         self.canvas.bind("<B1-ButtonRelease>", self.on_release)
         self.canvas.bind("<ButtonPress-1>", self.on_press)
-        self.canvas.bind("<ButtonPress-2>", self.select_line)
+        self.canvas.bind("<ButtonPress-2>", lambda e: self.recompute_canvas(test=True))
+        self.canvas.bind("<ButtonPress-3>", self.get_id)
 
     def get_lines(self):
         return self.lines
 
-    def delete_moved_lines(self):
+    def recompute_canvas(self, test=False):
         for line in self.lines:
-            if line.redraw is True:
-                print(line.id)
+            self.canvas.delete(line.id)
 
-    def recompute_canvas(self, simulation=False):
-        force = self.handle_lines_nb_change()
-        # self.canvas.delete("all")
-        if force is True:
-            self.canvas.delete('all')
-        for line in self.lines:
-            if line.redraw is True or force is True:
-                self.canvas.delete(line.id)
-
-                line.id = self.canvas.create_line(*line.get_pos(), width=(self.size[0] + self.size[1]) / 200,
-                                                  fill="#476042")
-                line.redraw = False
-                for g in line.genetic_modifier:
-                    g.apply_evolution()
-
-        if simulation is False or force is True:
+            line.id = self.canvas.create_line(*line.get_pos(),
+                                              width=((self.size[0] + self.size[1]) / 200) if test is False else (
+                                                      (self.size[0] + self.size[1]) / 100),
+                                              fill="#476042" if test is False else line.color, tags='line')
+            line.redraw = False
+        if self.lock_mode is False:
             self.redraw_joints()
+        if test is True:
+            for line in self.lines:
+                print(line)
 
     def lock(self):
         self.lock_mode = True
@@ -200,24 +197,50 @@ class CanvasHandler:
     def new_line_array(self, lines):
         arr = []
 
+        print('new line array')
         for line in lines:
-            arr.append(line.copy(self.lines))
+            cp = line.copy()
+            arr.append(cp)
+            print(line.id)
         return arr
 
+    def repair_connection(self, line, connection):
+        connection.parent = line
+        for line_tmp in self.lines:
+            if line_tmp.id == connection.child.id:
+                connection.child = line_tmp
+                connection.root = line_tmp if connection.root.id == line_tmp.id else line
+                print('found ' + str(line.id) + " - " + str(connection.child.id))
+                return
+        print('I did not found ' + str(line.id) + " - " + str(connection.child.id))
+
+    def recompute_connections(self):
+        print('start recompute ' + str(self.id))
+        for line in self.lines:
+            print(line.id)
+        for line in self.lines:
+            for connection in line.connections:
+                self.repair_connection(line, connection)
+
     def reconstruct(self, lines, new_size):
+        self.canvas.delete('all')
         self.drawn_line_tmp = 0
         self.lines = self.new_line_array(lines)
         self.selected_line = None
         self.connection_tmp = Connection()
         self.scale_lines(new_size)
         self.size = new_size
+        self.recompute_connections()
         self.recompute_canvas()
 
-    def handle_lines_nb_change(self):
-        if len(self.lines) != self.lines_nb:
-            self.lines_nb = len(self.lines)
-            return True
-        return False
+    def on_change(self):
+        if self.history_enabled is False:
+            return
+        if self.history_index != len(self.history) - 1:
+            self.history = self.history[:self.history_index + 1]
+
+        self.history.append(self.new_line_array(self.lines))
+        self.history_index = len(self.history) - 1
 
     def on_selected(self):
         for callback in self.on_selected_callbacks:
@@ -226,7 +249,26 @@ class CanvasHandler:
     def add_selected_callback(self, callback):
         self.on_selected_callbacks.append(callback)
 
-    def __init__(self, master):
+    def set_history_status(self, status):
+        self.history_enabled = status
+        if status is True:
+            self.history.append(self.new_line_array(self.lines))
+
+    def delete_history(self):
+        self.history = []
+
+    def history_jump(self, jump_size):
+        new_index = self.history_index + jump_size
+
+        if new_index < 0 or new_index >= len(self.history):
+            return
+        self.history_index = new_index
+        print('Before reconstruct')
+        for line in self.history[self.history_index]:
+            print(line)
+        self.reconstruct(self.history[self.history_index], self.size)
+
+    def __init__(self, master, theId=0):
         self.size = [500, 500]
         self.canvas = Canvas(master,
                              width=500,
@@ -242,3 +284,7 @@ class CanvasHandler:
         self.done = False
         self.lines_nb = 0
         self.on_selected_callbacks = []
+        self.history = []
+        self.history_enabled = False
+        self.history_index = 0
+        self.id = theId

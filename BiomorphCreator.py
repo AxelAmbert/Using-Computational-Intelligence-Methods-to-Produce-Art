@@ -1,8 +1,9 @@
 import tkinter as tk
 from CanvasHandler import *
 import random
-import time, threading
-
+import threading
+from BiomorphIOConverterGCode import *
+from BiomorphIOConverterPNG import *
 
 class BiomorphCreator(tk.Frame):
     def get_a_line_to_modify(self, lines):
@@ -11,10 +12,10 @@ class BiomorphCreator(tk.Frame):
         return lines[random.randint(0, len(lines) - 1)]
 
     def apply_random_to_line(self, line):
-        xs = random.randint(-15, 15)
-        ys = random.randint(-15, 15)
-        xe = random.randint(-15, 15)
-        ye = random.randint(-15, 15)
+        xs = random.randint(-30, 30)
+        ys = random.randint(-30, 30)
+        xe = random.randint(-30, 30)
+        ye = random.randint(-30, 30)
 
         line.move_pos(xs, ys, xe, ye)
 
@@ -25,15 +26,19 @@ class BiomorphCreator(tk.Frame):
         if line_to_modify is None:
             return
         self.apply_random_to_line(line_to_modify)
-        self.canvas.recompute_canvas(simulation=self.sim)
+        self.canvas.recompute_canvas()
 
     def change_view(self):
-        self.controller.show_frame('EvolutionView', self.canvas.lines)
+        self.controller.show_frame('EvolutionView', self.canvas)
 
     def init_button(self):
         button = Button(self, text="Press to add random gen", command=self.change_view)
         button.pack()
         return button
+
+    def prev_and_next_buttons(self):
+        Button(self, text="prev", command=lambda: self.canvas.history_jump(-1)).pack()
+        Button(self, text="next", command=lambda: self.canvas.history_jump(1)).pack()
 
     def rand(self):
         self.apply_random()
@@ -47,8 +52,13 @@ class BiomorphCreator(tk.Frame):
         else:
             self.sim = False
 
-    def update_with_data(self, lines):
+    def update_with_data(self, data):
         pass
+
+    def butt_g_code(self):
+        Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
+        Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
+
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -56,4 +66,7 @@ class BiomorphCreator(tk.Frame):
         self.canvas = CanvasHandler(self)
         self.canvas.canvas.pack(expand=YES, fill=BOTH)
         self.button = self.init_button()
+        self.prev_and_next_buttons()
         self.sim = False
+        self.canvas.set_history_status(True)
+        self.butt_g_code()

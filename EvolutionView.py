@@ -8,32 +8,48 @@ from LineSplitGM import *
 from LineCreationGM import *
 from LineRemoveGM import *
 
+
 class EvolutionView(tk.Frame):
 
 
-    def add_a_random_gene(self, line, choice):
-        type, probability = choice
-        fullname = 'Line' + type + 'GM'
-        class_ = getattr(fullname, fullname)
-        return class_()
+    def update_data(self, canvas):
+        self.update_with_data(canvas)
 
 
-    def add_random_genes(self, canvas):
-        operations = [('Split', 0.1), ('Creation', 0.3), ('Remove', 0.1)]
+    def verify_line_position(self, line, connection):
+        line_x_s, line_y_s, line_x_e, line_y_e = line.get_pos()
+        connection_x_s, connection_y_s, connection_x_e, connection_y_e = connection.root.get_pos()
+        size_x, size_y = line_x_e - line_x_s, line_y_e - line_y_s
 
+        if connection.connection_child == 'start':
+            line.set_pos([connection_x_s, connection_y_s, connection_x_s + size_x, connection_y_s + size_y])
+        else:
+            line.set_pos([connection_x_e, connection_y_e, connection_x_e + size_x, connection_y_e + size_y])
+
+
+    def verify_a_canvas_integrity(self, canvas):
         for line in canvas.lines:
-            choice = random.choice(operations)
-            self.add_a_random_gene(line, choice)
+            print(line)
+            for connection in line.connections:
+                if connection.root.id != line.id:
+                    self.verify_line_position(line, connection)
 
+    def verify_every_canvas_integrity(self):
+        for canvas in self.canvas_array:
+            print('Je moccupe de canvas ' + str(canvas.id))
+            self.verify_a_canvas_integrity(canvas)
 
     def init_canvas_array(self):
+        x = 0
         for i in range(0, 3):
             for y in range(0, 3):
-                tmp_canvas = CanvasHandler(self)
+                x += 1
+                tmp_canvas = CanvasHandler(self, x)
                 tmp_canvas.set_size(250, 250)
                 tmp_canvas.canvas.grid(column=i, row=y, padx=(50, 50), pady=(25, 25))
                 tmp_canvas.lock()
-                self.add_random_genes(tmp_canvas)
+                tmp_canvas.set_history_status(True)
+                tmp_canvas.add_selected_callback(self.update_data)
                 self.canvas_array.append(tmp_canvas)
 
     def init_slider(self):
@@ -46,18 +62,62 @@ class EvolutionView(tk.Frame):
         l = Label(self, text='Change speed')
         l.grid(column=1, row=3)
 
+    def do_x_evolution_step(self, modifier):
+        for i in range(0, self.slider.get()):
+            modifier.start_evolution()
 
-    def update_with_data(self, lines):
-        if lines is None:
+    def update_with_data(self, new_canvas, jump=False):
+        i = 0
+
+        if new_canvas is None or new_canvas.lines is None:
             return
         for canvas in self.canvas_array:
-            canvas.reconstruct(lines, [100, 100])
+            canvas.reconstruct(new_canvas.lines, [100, 100])
+            if jump is False:
+                canvas.on_change()
+        for modifier in self.genetic_handlers:
+            i += 1
+            print('Evolution for ' + str(i))
+            if i == 5:
+                self.parent_canvas = modifier.canvas_handler
+                continue
+            self.do_x_evolution_step(modifier)
+
+        self.verify_every_canvas_integrity()
+
+        print('no jump')
+        for canvas in self.canvas_array:
+            canvas.recompute_canvas()
+
+    def create_genetic_handlers(self):
+        array = []
+
+        for canvas in self.canvas_array:
+            array.append(GeneticModifierHandler(canvas))
+        return array
+
+    def history_jump_and_reconstruct(self, jump_size):
+        self.parent_canvas.history_jump(jump_size)
+        self.update_with_data(self.parent_canvas, jump=True)
+
+    def prev_and_next_buttons(self):
+        Button(self, text="prev", command=lambda: self.history_jump_and_reconstruct(-1)).grid(column=1, row=5)
+        Button(self, text="next", command=lambda: self.history_jump_and_reconstruct(1)).grid(column=2, row=5)
+
+    def refresh_button(self):
+        Button(self, text="refresh", command=self.refresh).grid(column=0, row=5)
+
+    def refresh(self):
+        self.update_with_data(self.parent_canvas)
 
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent,  bg='#000000')
+        tk.Frame.__init__(self, parent, bg='#000000')
         self.controller = controller
         self.canvas_array = []
         self.init_canvas_array()
         self.init_label()
         self.slider = self.init_slider()
-
+        self.genetic_handlers = self.create_genetic_handlers()
+        self.prev_and_next_buttons()
+        self.parent_canvas = self.canvas_array[4]
+        self.refresh_button()

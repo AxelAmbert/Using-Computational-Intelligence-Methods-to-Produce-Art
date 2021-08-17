@@ -16,8 +16,10 @@ def update_linked_connection(old_line, new_line, connected_line):
 
 class LineSplitGM(GeneticModifier):
 
-    def __init__(self, line, lines, probability):
-        GeneticModifier.__init__(self, line, lines, probability)
+    def __init__(self, probability):
+        self.line = None
+        self.lines = None
+        GeneticModifier.__init__(self, probability)
 
     def sort_connections(self):
         start = []
@@ -74,16 +76,16 @@ class LineSplitGM(GeneticModifier):
         split_yb = y_b + ((y_e - y_b) / 2)
 
         line1 = Line.Line(-1, self.line.parent, [x_b, split_xb, y_b, split_yb], '')
-        line2 =  Line.Line(-1, line1, [split_xb, x_e, split_yb, y_e], '')
+        line2 = Line.Line(-1, line1, [split_xb, x_e, split_yb, y_e], '')
         self.recreate_connections(line1, line2)
         self.lines.append(line1)
         self.lines.append(line2)
 
-    def apply_evolution(self):
-        if random.random() > self.probability:
-            return
-        try:
-            self.lines.remove(self.line)
-        except:
-            pass
+    def evolve(self, line, lines):
+        self.line = line
+        self.lines = lines
+        self.safe_remove(self.line, self.lines)
         self.create_two_new_lines()
+        return True
+
+

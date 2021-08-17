@@ -2,6 +2,7 @@ from tkinter import font as tkfont
 from BiomorphCreator import *
 from EvolutionView import *
 
+
 class SampleApp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -16,14 +17,13 @@ class SampleApp(tk.Tk):
         self.frames = {}
         for F in (BiomorphCreator, EvolutionView):
             page_name = F.__name__
-            frame = F(parent=container, controller=self,)
+            frame = F(parent=container, controller=self, )
             self.frames[page_name] = frame
 
             # put all of the pages in the same location;
             # the one on the top of the stacking order
             # will be the one that is visible.
             frame.grid(row=0, column=0, sticky="nsew")
-
 
         self.show_frame("BiomorphCreator")
 
