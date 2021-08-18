@@ -33,7 +33,6 @@ class BiomorphIOConverter:
         visited_lines.append(line)
 
         self.encode_a_line(incoming_connection, line.get_pos(), extremities)
-        print(line.get_pos())
         for connection in line.connections:
             if connection.child not in visited_lines:
                 self.reset_pos(connection, line.get_pos(), extremities)

@@ -83,7 +83,7 @@ class EvolutionView(tk.Frame):
                 continue
             self.do_x_evolution_step(modifier)
 
-        self.verify_every_canvas_integrity()
+        #self.verify_every_canvas_integrity()
 
         print('no jump')
         for canvas in self.canvas_array:

@@ -5,7 +5,9 @@ import threading
 from BiomorphIOConverterGCode import *
 from BiomorphIOConverterPNG import *
 
+
 class BiomorphCreator(tk.Frame):
+
     def get_a_line_to_modify(self, lines):
         if len(lines) == 0:
             return None
@@ -58,7 +60,6 @@ class BiomorphCreator(tk.Frame):
     def butt_g_code(self):
         Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
         Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
-
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)

@@ -48,7 +48,7 @@ class CanvasHandler:
         for overlap in overlaps:
             tags_overlap = self.canvas.gettags(overlap)
             for tag in tags:
-                if self.has_right_tags(tags_overlap, tag) == True:
+                if self.has_right_tags(tags_overlap, tag) is True:
                     if debug is True:
                         print(overlap)
                     return overlap
@@ -85,19 +85,17 @@ class CanvasHandler:
             return
         self.set_new_parent_line(event)
         self.allow_drawing = True
-        self.x1, self.y1 = (event.x - 1), (event.y - 1)
+        self.x1, self.y1 = event.x, event.y
 
     def create_a_new_line(self):
         if self.allow_drawing is False:
             return
-        print('Je create ')
         line = Line(self.drawn_line_tmp, self.selected_line, [self.x1, self.x2, self.y1, self.y2],
                     self.drawn_line_tmp)
         self.lines.append(line)
         self.connection_tmp.child = line
         self.connection_tmp.connection_child = 'start'
         if self.selected_line is not None:
-            print("jajoute " + str(self.connection_tmp))
             self.selected_line.add_connection(self.connection_tmp.copy())
             line.add_connection(self.connection_tmp.reverse())
         self.on_change()
@@ -133,7 +131,7 @@ class CanvasHandler:
         if self.allow_drawing is False:
             return
 
-        self.x2, self.y2 = (event.x + 1), (event.y + 1)
+        self.x2, self.y2 = event.x, event.y
         self.canvas.delete(self.drawn_line_tmp)
 
         self.drawn_line_tmp = self.canvas.create_line(self.x1, self.y1, self.x2, self.y2,
@@ -194,33 +192,28 @@ class CanvasHandler:
         for line in self.lines:
             line.scale(self.size, new_size)
 
-    def new_line_array(self, lines):
-        arr = []
-
-        print('new line array')
-        for line in lines:
-            cp = line.copy()
-            arr.append(cp)
-            print(line.id)
-        return arr
-
-    def repair_connection(self, line, connection):
+    def repair_connection(self, lines, line, connection):
         connection.parent = line
-        for line_tmp in self.lines:
+        for line_tmp in lines:
             if line_tmp.id == connection.child.id:
                 connection.child = line_tmp
                 connection.root = line_tmp if connection.root.id == line_tmp.id else line
-                print('found ' + str(line.id) + " - " + str(connection.child.id))
                 return
-        print('I did not found ' + str(line.id) + " - " + str(connection.child.id))
 
-    def recompute_connections(self):
-        print('start recompute ' + str(self.id))
-        for line in self.lines:
-            print(line.id)
-        for line in self.lines:
+    def recompute_connections(self, lines):
+        for line in lines:
             for connection in line.connections:
-                self.repair_connection(line, connection)
+                self.repair_connection(lines, line, connection)
+
+    def new_line_array(self, lines):
+        arr = []
+
+        for line in lines:
+            cp = line.copy()
+            arr.append(cp)
+        self.recompute_connections(arr)
+        return arr
+
 
     def reconstruct(self, lines, new_size):
         self.canvas.delete('all')
@@ -230,7 +223,6 @@ class CanvasHandler:
         self.connection_tmp = Connection()
         self.scale_lines(new_size)
         self.size = new_size
-        self.recompute_connections()
         self.recompute_canvas()
 
     def on_change(self):
@@ -263,9 +255,6 @@ class CanvasHandler:
         if new_index < 0 or new_index >= len(self.history):
             return
         self.history_index = new_index
-        print('Before reconstruct')
-        for line in self.history[self.history_index]:
-            print(line)
         self.reconstruct(self.history[self.history_index], self.size)
 
     def __init__(self, master, theId=0):

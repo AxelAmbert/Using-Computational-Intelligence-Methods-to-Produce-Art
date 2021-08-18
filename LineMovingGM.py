@@ -10,7 +10,6 @@ class LineMovingGM(GeneticModifier):
         GeneticModifier.__init__(self, probability)
 
     def evolve(self, line, _):
-        print('Move')
         xs = random.randint(-30, 30)
         ys = random.randint(-30, 30)
         xe = random.randint(-30, 30)

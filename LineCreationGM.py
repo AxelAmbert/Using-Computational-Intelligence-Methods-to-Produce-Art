@@ -12,7 +12,6 @@ class LineCreationGM(GeneticModifier):
         GeneticModifier.__init__(self, probability)
 
     def evolve(self, line, lines):
-        print('Create')
 
         random_creation = random.choice(['start', 'end'])
         new_line = None

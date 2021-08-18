@@ -9,7 +9,7 @@ def randomize_probability(probability):
 class GeneticModifierHandler:
 
     def init_genetic_modifiers(self):
-        modifiers = [('Creation', 0.05), ('Remove', 0.01), ('Split', 0.01), ('Moving', 0.07)]
+        modifiers = [('Creation', 0.0), ('Remove', 0.01), ('Split', 0.05), ('Moving', 0.07)]
 
         for (modifier_type, probability) in modifiers:
             fullname = 'Line' + modifier_type + 'GM'

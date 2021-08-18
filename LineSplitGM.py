@@ -6,14 +6,6 @@ import LineCreationGM
 from LineRemoveGM import *
 
 
-def update_linked_connection(old_line, new_line, connected_line):
-    for connection in connected_line.connections:
-        if connection.child is not None and connection.child.id == old_line.id:
-            connection.child = new_line
-        elif connection.parent is not None and connection.parent.id == old_line.id:
-            connection.parent = new_line
-
-
 class LineSplitGM(GeneticModifier):
 
     def __init__(self, probability):
@@ -38,26 +30,24 @@ class LineSplitGM(GeneticModifier):
         line1.connections.append(start)
         line2.connections.append(end)
 
+    def update_linked_connection(self, old_line, new_line, connected_line):
+        for connection in connected_line.connections:
+            if connection.child is not None and connection.child.id == old_line.id:
+                connection.child = new_line
+            if connection.root is not None and connection.root.id == old_line.id:
+                connection.root = new_line
+
     def remove_old_connection_references(self, line1, line2):
         for connection in self.line.connections:
-            if connection.parent is not None and connection.parent.id == self.line.id:
-                if connection.connection_parent == 'start':
-                    connection.parent = line1
-                    line1.add_connection(connection)
-                    update_linked_connection(self.line, line1, connection.child)
-                elif connection.connection_parent == 'end':
-                    connection.parent = line2
-                    line2.add_connection(connection)
-                    update_linked_connection(self.line, line2, connection.child)
-            elif connection.child is not None and connection.child.id == self.line.id:
-                if connection.connection_child == 'start':
-                    connection.child = line1
-                    line1.add_connection(connection)
-                    update_linked_connection(self.line, line1, connection.parent)
-                elif connection.connection_child == 'end':
-                    connection.child = line2
-                    line2.add_connection(connection)
-                    update_linked_connection(self.line, line2, connection.parent)
+            new_connection = connection.copy()
+            if connection.connection_parent == 'start':
+                new_connection.parent = line1
+                line1.add_connection(new_connection)
+                self.update_linked_connection(self.line, line1, new_connection.child)
+            elif connection.connection_parent == 'end':
+                new_connection.parent = line2
+                line2.add_connection(new_connection)
+                self.update_linked_connection(self.line, line2, new_connection.child)
 
     def recreate_connections(self, line1, line2):
         new_connection = Connection().new(line1, line2, line1, 'end', 'start')
@@ -87,5 +77,3 @@ class LineSplitGM(GeneticModifier):
         self.safe_remove(self.line, self.lines)
         self.create_two_new_lines()
         return True
-
-
