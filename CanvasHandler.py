@@ -31,6 +31,7 @@ class CanvasHandler:
     """
         Draw a joint if there is no joint at the current [x, y] position
     """
+
     def draw_a_join_not_overlapping(self, x, y):
         col = "#476042"
 
@@ -47,6 +48,7 @@ class CanvasHandler:
     """
         For each line, draw the corresponding joints, if they are not overlapping with other joints
     """
+
     def draw_joints(self):
         for line in self.lines:
             x, y = line.get_start()
@@ -68,6 +70,7 @@ class CanvasHandler:
     """
         Look if at a certain position (pos), there is certain tags (tags) overlapping.
     """
+
     def look_for_tags_overlapping(self, pos, tags, debug=False):
         overlaps = self.canvas.find_overlapping(*pos)
         for overlap in overlaps:
@@ -82,6 +85,7 @@ class CanvasHandler:
     """
         Verify if the user clicked on a joint by looking if the position in event overlaps with a "joint" tag.
     """
+
     def verify_line_validity(self, event):
         if len(self.lines) == 0:
             return True
@@ -98,6 +102,7 @@ class CanvasHandler:
         Assign the line to the "selected_line" class attribute
         Complete the future connection
     """
+
     def set_new_parent_line(self, event):
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'], debug=False)
         if overlap_joint_id is None:
@@ -131,6 +136,7 @@ class CanvasHandler:
         If the owner of the joint is line 1, that is connected to line 2 and line 3.
         The new line will be connected to line 1, and line 2, 3 by extension.
     """
+
     def link_to_every_overlap(self, line):
         for connection in self.selected_line.connections:
             new_connection = self.connection_tmp.copy()
@@ -143,10 +149,10 @@ class CanvasHandler:
         self.selected_line.add_connection(self.connection_tmp.copy())
         line.add_connection(self.connection_tmp.reverse())
 
-
     """
         Create a new line and add the proper connections
     """
+
     def create_a_new_line(self):
         if self.allow_drawing is False:
             return
@@ -167,6 +173,7 @@ class CanvasHandler:
         Look if the end of the created line is on another joint
         It will then create another connection based on that closing overlap
     """
+
     def look_for_closing_overlap(self, created_line, event):
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'])
         overlap_line = self.find_line_ownership(overlap_joint_id)
@@ -184,6 +191,7 @@ class CanvasHandler:
         If the previous requirement are not met (i.e: drawing is locked), it will be ignored.
         Otherwise, it will create a new line and reset the temporary attributes.
     """
+
     def on_release(self, event):
         if self.lock_mode is True:
             return
@@ -200,6 +208,7 @@ class CanvasHandler:
         If the previous requirement are not met (i.e: drawing is locked), it will be ignored.
         Otherwise, it will draw a temporary line that represent the moving mouse.
     """
+
     def on_move(self, event):
         if self.allow_drawing is False:
             return
@@ -238,17 +247,31 @@ class CanvasHandler:
         Redraw the canvas entirely
         Also draw joints if the canvas is in drawing mode
     """
+
     def recompute_canvas(self, test=False):
+        i = 0
+
         for line in self.lines:
             self.canvas.delete(line.id)
-            line.id = self.canvas.create_line(*line.get_pos(),
-                                                width=((self.size[0] + self.size[1]) / 200) if test is False else (
-                                                (self.size[0] + self.size[1]) / 100),
-                                                fill="#476042" if test is False else line.color, tags='line')
+
+            if i == 3:
+                line.id = self.canvas.create_line(*line.get_pos(),
+                                                  width=((self.size[0] + self.size[1]) / 200) if test is False else (
+                                                          (self.size[0] + self.size[1]) / 100),
+                                                  fill="#9353e7" if test is False else line.color, tags='line')
+            else:
+                line.id = self.canvas.create_line(*line.get_pos(),
+                                                  width=((self.size[0] + self.size[1]) / 200) if test is False else (
+                                                          (self.size[0] + self.size[1]) / 100),
+                                                  fill="#476042" if test is False else line.color, tags='line')
 
             line.redraw = False
+            i += 1
         if self.lock_mode is False:
             self.redraw_joints()
+        if test is True:
+            for line in self.lines:
+                print(line)
 
     def lock(self):
         self.lock_mode = True
@@ -300,14 +323,16 @@ class CanvasHandler:
                     if connection.root.id == find_line.id:
                         root_found = True
                 if child_found is False or root_found is False:
-                    print('IT FAILED ' +  'Error for canvas ' + str(self.id) + 'child not found ' if child_found is False else ' ' + ', root not found ' if root_found is False else '.' + self.last_action)
-                    showinfo('Error', 'Error for canvas ' + str(self.id) + 'child not found ' if child_found is False else ' ' + ', root not found ' if root_found is False else '.' + self.last_action)
+                    print('IT FAILED ' + 'Error for canvas ' + str(
+                        self.id) + 'child not found ' if child_found is False else ' ' + ', root not found ' if root_found is False else '.' + self.last_action)
+                    # showinfo('Error', 'Error for canvas ' + str(self.id) + 'child not found ' if child_found is False else ' ' + ', root not found ' if root_found is False else '.' + self.last_action)
                     return
 
     """
         Reconstruct the canvas with a new set of line
         It handles new size and scale the lines to a new ratio
     """
+
     def reconstruct(self, lines, new_size):
         self.canvas.delete('all')
         self.drawn_line_tmp = 0
@@ -323,6 +348,7 @@ class CanvasHandler:
         This function is called when there is a change in the canvas
         Example: a new line has been drawn, or a line has been removed
     """
+
     def on_change(self):
         if self.history_enabled is False:
             return
@@ -335,6 +361,7 @@ class CanvasHandler:
     """
         Call every callback when the canvas is selected while it is in lock_mode=True
     """
+
     def on_selected(self):
         for callback in self.on_selected_callbacks:
             callback(self)

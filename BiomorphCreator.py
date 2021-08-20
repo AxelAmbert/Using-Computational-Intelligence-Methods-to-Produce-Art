@@ -40,7 +40,7 @@ class BiomorphCreator(tk.Frame):
         self.controller.show_frame('EvolutionView', self.canvas)
 
     def init_button(self):
-        button = Button(self, text="Press to add random gen", command=self.change_view)
+        button = Button(self, text="Evolve", command=self.change_view)
         button.pack()
         return button
 
@@ -69,6 +69,7 @@ class BiomorphCreator(tk.Frame):
         self.canvas.reconstruct(self.canvas.lines, self.canvas.size)
 
     def butt_g_code(self):
+        pass
         #Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
         #Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
         Button(self, text="go", command=self.ok).pack()
