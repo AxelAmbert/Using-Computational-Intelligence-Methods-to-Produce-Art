@@ -5,6 +5,12 @@ import random
 import LineCreationGM
 from LineRemoveGM import *
 
+"""
+    This class override GeneticModifier
+    It is a Genetic Modifier that split a line into two new lines
+    After the process the base line is removed
+"""
+
 
 class LineSplitGM(GeneticModifier):
 
@@ -60,13 +66,28 @@ class LineSplitGM(GeneticModifier):
         x_s, y_s, x_e, y_e = pos
         return x_s, x_e, y_s, y_e
 
+    def get_two_uniques_ids(self):
+        ids = []
+        fail = False
+
+        while len(ids) != 2:
+            rdm = random.randint(0, 9223372036854775807)
+            for line in self.lines:
+                if line.id == rdm:
+                    fail = True
+                    break
+            if fail is False and rdm not in ids:
+                ids.append(rdm)
+        return ids
+
     def create_two_new_lines(self):
         x_b, y_b, x_e, y_e = self.line.get_pos()
         split_xb = x_b + ((x_e - x_b) / 2)
         split_yb = y_b + ((y_e - y_b) / 2)
+        ids = self.get_two_uniques_ids()
 
-        line1 = Line.Line(-1, self.line.parent, [x_b, split_xb, y_b, split_yb], '')
-        line2 = Line.Line(-1, line1, [split_xb, x_e, split_yb, y_e], '')
+        line1 = Line.Line(ids[0], self.line.parent, [x_b, split_xb, y_b, split_yb], '')
+        line2 = Line.Line(ids[1], line1, [split_xb, x_e, split_yb, y_e], '')
         self.recreate_connections(line1, line2)
         self.lines.append(line1)
         self.lines.append(line2)

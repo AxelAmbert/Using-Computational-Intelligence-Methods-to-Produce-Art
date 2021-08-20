@@ -6,10 +6,14 @@ def randomize_probability(probability):
     return probability
 
 
+"""
+    This class handles genetic modifiers for a specific canvas
+"""
+
 class GeneticModifierHandler:
 
     def init_genetic_modifiers(self):
-        modifiers = [('Creation', 0.0), ('Remove', 0.01), ('Split', 0.05), ('Moving', 0.07)]
+        modifiers = [('Creation', 0.005), ('Remove', 0.005), ('Split', 0.01), ('Moving', 0.01)]
 
         for (modifier_type, probability) in modifiers:
             fullname = 'Line' + modifier_type + 'GM'
@@ -22,11 +26,11 @@ class GeneticModifierHandler:
         return value.probability
 
     def get_full_proabibilty_value(self):
-        sum = 0.0
+        the_sum = 0.0
 
         for modifier in self.genetic_modifiers:
-            sum += modifier.probability
-        return sum
+            the_sum += modifier.probability
+        return the_sum
 
     def tower_sampling(self):
         i = 0
@@ -43,7 +47,9 @@ class GeneticModifierHandler:
         return self.genetic_modifiers[len(self.genetic_modifiers) - 1]
 
     def start_evolution(self):
-        self.tower_sampling().apply_evolution(self.canvas_handler.lines)
+        choice = self.tower_sampling()
+        choice.apply_evolution(self.canvas_handler.lines)
+        self.canvas_handler.last_action = type(choice).__name__
         self.canvas_handler.recompute_canvas()
 
     def __init__(self, canvas_handler):

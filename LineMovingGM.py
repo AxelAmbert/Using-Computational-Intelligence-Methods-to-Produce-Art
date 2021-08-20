@@ -4,6 +4,12 @@ from Connection import *
 import random
 
 
+"""
+    This class override GeneticModifier
+    It is a Genetic Modifier that moves a line
+"""
+
+
 class LineMovingGM(GeneticModifier):
 
     def __init__(self, probability):

@@ -1,3 +1,14 @@
+
+"""
+    Represent a connection between two line
+    parent is the owner of the connection
+    child is the line where parent points to
+    root is the owner of the connection (usually the older line)
+    connection_parent is from where the connection is on the parent (start, end)
+    connection_child is from where the connection is on the child (start, end)
+"""
+
+
 class Connection:
 
     def __init__(self):

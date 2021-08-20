@@ -1,11 +1,17 @@
 import math
 
 
+"""
+    Base class used to convert a Biomorph into a IO object.
+    Override this class to convert a Biomorph into a PNG, GCode, etc...
+"""
+
+
 class BiomorphIOConverter:
 
-    def convert(self):
-        pass
-
+    """
+        For each lines in the Canvas, find the extremities.
+    """
     def get_min_max_values(self):
         x_min, y_min, x_max, y_max = math.inf, math.inf, -math.inf, -math.inf
 
@@ -44,6 +50,11 @@ class BiomorphIOConverter:
     def on_finish(self):
         pass
 
+    """
+        This function will encode a Biomorph into another format
+        To convert it to a specific format, overide the following functions:
+        on_start, encode_a_line, reset_pos, on_finish. 
+    """
     def modular_method(self):
         visited_lines = []
         extremities = self.get_min_max_values()

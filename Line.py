@@ -10,6 +10,10 @@ def random_color():
         t += str(random.randint(0, 9))
     return t
 
+"""
+    This class represents a line and every useful information about a specific line
+"""
+
 class Line:
 
     def __init__(self, line_id, parent, positions, tag):
@@ -69,23 +73,41 @@ class Line:
         self.pos_x_end = pos[2]
         self.pos_y_end = pos[3]
 
-    def compute_connection_update(self, connection, deep):
+    def compute_connection_update(self, connection):
+        impact = []
+
         x = getattr(connection.parent, 'pos_x_' + connection.connection_parent)
         y = getattr(connection.parent, 'pos_y_' + connection.connection_parent)
-        setattr(self, 'pos_x_' + connection.connection_child, x)
-        setattr(self, 'pos_y_' + connection.connection_child, y)
+        x_child = getattr(self, 'pos_x_' + connection.connection_child)
+        y_child = getattr(self, 'pos_y_' + connection.connection_child)
+
+        if x != x_child or y != y_child:
+            setattr(self, 'pos_x_' + connection.connection_child, x)
+            setattr(self, 'pos_y_' + connection.connection_child, y)
+            impact.append(connection.connection_child)
         self.redraw = True
 
-        if deep is True:
-            self.update_connections(deep=False)
+        self.update_connections(impact)
 
-    def update_connections(self, deep=True):
+    """
+        This function is called when the line moves
+        It then go recursively through every other connections to move them accordingly
+    """
+    def update_connections(self, impact):
         for connection in self.connections:
-            connection.child.compute_connection_update(connection, deep)
+            if connection.connection_parent in impact:
+                connection.child.compute_connection_update(connection)
 
     def move_pos(self, xs, ys, xe, ye):
+        impact = []
+
+        if xs != 0 or ys != 0:
+            impact.append('start')
+        if xe != 0 or ye != 0:
+            impact.append('end')
+
         self.set_pos([self.pos_x_start + xs, self.pos_y_start + ys, self.pos_x_end + xe, self.pos_y_end + ye])
-        self.update_connections()
+        self.update_connections(impact)
 
     def get_joint_pos(self, joint_id):
         if self.joint_begin.id == joint_id:
@@ -94,7 +116,9 @@ class Line:
             return self.joint_end.where
         return 'unset'
 
-    # TODO handle 0 division error:
+    """
+        Scale the line size and pos to a new ratio
+    """
     def scale(self, old_size, new_size):
         old_size_x, old_size_y = old_size
         new_size_x, new_size_y = new_size

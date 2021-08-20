@@ -8,6 +8,10 @@ from LineSplitGM import *
 from LineCreationGM import *
 from LineRemoveGM import *
 
+"""
+    This class is representing the Tkinter view: Evolution.
+    In this view the user makes its Biomorph Evolve
+"""
 
 class EvolutionView(tk.Frame):
 
@@ -26,7 +30,10 @@ class EvolutionView(tk.Frame):
         else:
             line.set_pos([connection_x_e, connection_y_e, connection_x_e + size_x, connection_y_e + size_y])
 
-
+    """
+        This function can be called as a safeguard.
+        It will recompute every line positions to be sure its right.
+    """
     def verify_a_canvas_integrity(self, canvas):
         for line in canvas.lines:
             print(line)
@@ -36,7 +43,6 @@ class EvolutionView(tk.Frame):
 
     def verify_every_canvas_integrity(self):
         for canvas in self.canvas_array:
-            print('Je moccupe de canvas ' + str(canvas.id))
             self.verify_a_canvas_integrity(canvas)
 
     def init_canvas_array(self):
@@ -66,6 +72,10 @@ class EvolutionView(tk.Frame):
         for i in range(0, self.slider.get()):
             modifier.start_evolution()
 
+    """
+        Called when the user click on a canvas
+        It will reload the EvolutionView with new data
+    """
     def update_with_data(self, new_canvas, jump=False):
         i = 0
 

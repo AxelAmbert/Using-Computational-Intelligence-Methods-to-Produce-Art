@@ -1,3 +1,7 @@
+"""
+    This class represents a joint
+"""
+
 class Joint:
 
     def __init__(self, parent, joint_id, where):

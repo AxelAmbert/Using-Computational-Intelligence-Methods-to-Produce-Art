@@ -3,9 +3,15 @@ from CanvasHandler import *
 import random
 import threading
 from BiomorphIOConverterGCode import *
-from BiomorphIOConverterPNG import *
+from BiomorphIOConverterPostscript import *
+from LineRemoveGM import *
 
 
+"""
+    This class is representing the Tkinter view: BiomorphCreator.
+    In this view the user design its Biomorph before sending it
+    to the evolution process.
+"""
 class BiomorphCreator(tk.Frame):
 
     def get_a_line_to_modify(self, lines):
@@ -57,9 +63,15 @@ class BiomorphCreator(tk.Frame):
     def update_with_data(self, data):
         pass
 
+    def ok(self):
+        k = LineRemoveGM(100)
+        k.evolve(self.canvas.lines[3], self.canvas.lines)
+        self.canvas.reconstruct(self.canvas.lines, self.canvas.size)
+
     def butt_g_code(self):
-        Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
-        Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
+        #Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
+        #Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
+        Button(self, text="go", command=self.ok).pack()
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)

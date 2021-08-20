@@ -1,5 +1,10 @@
 from BiomorphIOConverter import *
 
+"""
+    Override class of BiomorphIOConverter
+    This class convert a Biomorph into GCode
+"""
+
 
 class BiomorphIOConverterGCode(BiomorphIOConverter):
 
