@@ -1,12 +1,5 @@
-import copy
-import tkinter as tk
-from CanvasHandler import *
-import random
-import time, threading
 from CanvasGrid import *
-from LineSplitGM import *
-from LineCreationGM import *
-from LineRemoveGM import *
+from BiomorphIOConverterGCode import *
 
 """
     This class is representing the Tkinter view: Evolution.
@@ -65,7 +58,7 @@ class EvolutionView(tk.Frame):
         return s
 
     def init_label(self):
-        l = Label(self, text='Change speed')
+        l = Label(self, text='Number of iterations')
         l.grid(column=1, row=3)
 
     def do_x_evolution_step(self, modifier):
@@ -82,7 +75,7 @@ class EvolutionView(tk.Frame):
         if new_canvas is None or new_canvas.lines is None:
             return
         for canvas in self.canvas_array:
-            canvas.reconstruct(new_canvas.lines, [100, 100])
+            canvas.reconstruct(new_canvas.lines, new_canvas.size, [100, 100])
             if jump is False:
                 canvas.on_change()
         for modifier in self.genetic_handlers:
@@ -111,11 +104,12 @@ class EvolutionView(tk.Frame):
         self.update_with_data(self.parent_canvas, jump=True)
 
     def prev_and_next_buttons(self):
+        Button(self, text="refresh", command=self.refresh).grid(column=0, row=5)
         Button(self, text="prev", command=lambda: self.history_jump_and_reconstruct(-1)).grid(column=1, row=5)
         Button(self, text="next", command=lambda: self.history_jump_and_reconstruct(1)).grid(column=2, row=5)
+        Button(self, text="to gcode", command=lambda: BiomorphIOConverterGCode(self.parent_canvas, 'test.txt').encode()).grid(column=3, row=5)
+        Button(self, text="edit", command=lambda: self.controller.show_frame('BiomorphCreator', self.parent_canvas)).grid(column=4, row=5)
 
-    def refresh_button(self):
-        Button(self, text="refresh", command=self.refresh).grid(column=0, row=5)
 
     def refresh(self):
         self.update_with_data(self.parent_canvas)
@@ -130,4 +124,3 @@ class EvolutionView(tk.Frame):
         self.genetic_handlers = self.create_genetic_handlers()
         self.prev_and_next_buttons()
         self.parent_canvas = self.canvas_array[4]
-        self.refresh_button()

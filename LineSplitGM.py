@@ -82,7 +82,7 @@ class LineSplitGM(GeneticModifier):
 
     def create_two_new_lines(self):
         x_b, y_b, x_e, y_e = self.line.get_pos()
-        split_xb = x_b + ((x_e - x_b) / 2)
+        split_xb = x_b + (x_e - x_b) / 2
         split_yb = y_b + ((y_e - y_b) / 2)
         ids = self.get_two_uniques_ids()
 

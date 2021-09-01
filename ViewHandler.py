@@ -7,6 +7,7 @@ class ViewHandler(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        self.title('Using Computational Intelligence to Produce Art')
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
         self.resizable(False, False)
         container = tk.Frame(self)

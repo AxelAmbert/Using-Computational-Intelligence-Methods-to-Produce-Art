@@ -125,6 +125,10 @@ class Line:
         ratio_x = old_size_x / new_size_x
         ratio_y = old_size_y / new_size_y
 
+        print('Old size = ' + str(old_size))
+        print('Ratio = ' + str([ratio_x, ratio_y]))
+        print('New size = ' + str([self.pos_x_start, self.pos_x_end, self.pos_y_start, self.pos_y_end]))
+
         self.pos_x_start /= ratio_x
         self.pos_x_end /= ratio_x
         self.pos_y_start /= ratio_y

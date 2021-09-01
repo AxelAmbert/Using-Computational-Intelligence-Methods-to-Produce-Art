@@ -174,6 +174,18 @@ class CanvasHandler:
         It will then create another connection based on that closing overlap
     """
 
+    def link_to_every_closing_overlap(self, line, created_connection, overlap_line):
+        for connection in overlap_line.connections:
+            new_connection = created_connection.copy()
+            new_connection.parent = connection.child
+            new_connection.root = connection.child
+            new_connection.connection_parent = connection.connection_child
+            if connection.connection_parent == created_connection.connection_parent:
+                connection.child.add_connection(new_connection)
+                line.add_connection(new_connection.reverse())
+        line.add_connection(created_connection.copy())
+        overlap_line.add_connection(created_connection.reverse())
+
     def look_for_closing_overlap(self, created_line, event):
         overlap_joint_id = self.look_for_tags_overlapping([event.x, event.y, event.x, event.y], ['joint'])
         overlap_line = self.find_line_ownership(overlap_joint_id)
@@ -183,8 +195,9 @@ class CanvasHandler:
             return
         new_connection = Connection().new(created_line, overlap_line, overlap_line, 'end',
                                           overlap_line.get_joint_pos(overlap_joint_id))
-        created_line.add_connection(new_connection)
-        overlap_line.add_connection(new_connection.reverse())
+        self.link_to_every_closing_overlap(created_line, new_connection, overlap_line)
+        #created_line.add_connection(new_connection)
+        #overlap_line.add_connection(new_connection.reverse())
 
     """
         This function is called when the user release the mouse button.
@@ -263,7 +276,7 @@ class CanvasHandler:
                 line.id = self.canvas.create_line(*line.get_pos(),
                                                   width=((self.size[0] + self.size[1]) / 200) if test is False else (
                                                           (self.size[0] + self.size[1]) / 100),
-                                                  fill="#476042" if test is False else line.color, tags='line')
+                                                  fill=line.color, tags='line')
 
             line.redraw = False
             i += 1
@@ -285,9 +298,9 @@ class CanvasHandler:
     def set_grid(self, column, row):
         self.canvas.grid(column=column, row=row)
 
-    def scale_lines(self, new_size):
+    def scale_lines(self, old_size, new_size):
         for line in self.lines:
-            line.scale(self.size, new_size)
+            line.scale(old_size, new_size)
 
     def repair_connection(self, lines, line, connection):
         connection.parent = line
@@ -333,13 +346,13 @@ class CanvasHandler:
         It handles new size and scale the lines to a new ratio
     """
 
-    def reconstruct(self, lines, new_size):
+    def reconstruct(self, lines, old_size, new_size):
         self.canvas.delete('all')
         self.drawn_line_tmp = 0
         self.lines = self.new_line_array(lines)
         self.selected_line = None
         self.connection_tmp = Connection()
-        self.scale_lines(new_size)
+        self.scale_lines(old_size, new_size)
         self.size = new_size
         self.recompute_canvas()
         self.verification()
@@ -383,7 +396,7 @@ class CanvasHandler:
         if new_index < 0 or new_index >= len(self.history):
             return
         self.history_index = new_index
-        self.reconstruct(self.history[self.history_index], self.size)
+        self.reconstruct(self.history[self.history_index], self.size, self.size)
 
     def __init__(self, master, theId=0):
         self.size = [500, 500]

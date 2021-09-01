@@ -5,6 +5,7 @@ import threading
 from BiomorphIOConverterGCode import *
 from BiomorphIOConverterPostscript import *
 from LineRemoveGM import *
+from LineSplitGM import *
 
 
 """
@@ -60,19 +61,25 @@ class BiomorphCreator(tk.Frame):
         else:
             self.sim = False
 
-    def update_with_data(self, data):
-        pass
+    def update_with_data(self, canvas):
+        if canvas:
+            self.canvas.reconstruct(canvas.lines, canvas.size, [500, 500])
 
     def ok(self):
         k = LineRemoveGM(100)
         k.evolve(self.canvas.lines[3], self.canvas.lines)
-        self.canvas.reconstruct(self.canvas.lines, self.canvas.size)
+        self.canvas.reconstruct(self.canvas.lines, self.canvas.size, self.canvas.size)
+
+    def apply_split(self):
+        k = LineSplitGM(100)
+        k.evolve(self.canvas.lines[0], self.canvas.lines)
+        self.canvas.recompute_canvas()
 
     def butt_g_code(self):
         pass
         #Button(self, text="g_code", command=lambda: BiomorphIOConverterGCode(self.canvas, 'test.txt').encode()).pack()
         #Button(self, text="png", command=lambda: BiomorphIOConverterPNG(self.canvas, 'test.eps').encode()).pack()
-        Button(self, text="go", command=self.ok).pack()
+        Button(self, text="go", command=self.apply_split).pack()
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
