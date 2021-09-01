@@ -43,7 +43,6 @@ class LineRemoveGM(GeneticModifier):
             return True
         return False
 
-    # TODO look screenshot
     # test each line to know if it can find every other lines
     def look_for_line_looping(self, line):
         if line.id != self.line.id:
@@ -94,8 +93,18 @@ class LineRemoveGM(GeneticModifier):
                 return False
         return True
 
+    # This function determines if it worth or not to delete the line
+    # It consider the number of lines deleted compared to the number of total line
+    # It then applies a random number to see if the delete operation will happen
+    def worth_removing(self, lines_to_remove):
+        rdm = random.random()
+        percent = len(self.lines) / len(lines_to_remove)
+
+        return rdm > percent
+
     def remove_lines(self, lines_to_remove):
-        print('I have to remove ' + str(len(lines_to_remove)))
+        if self.worth_removing(lines_to_remove) is False:
+            return
         for line in self.lines:
             line.connections = list(filter(lambda c: self.is_deleted(c, lines_to_remove), line.connections))
 
@@ -120,7 +129,7 @@ class LineRemoveGM(GeneticModifier):
                 arr.append(connection.child)
                 self.get_indirectly_linked(arr, connection.child.connections)
 
-    def test(self):
+    def apply_remove(self):
         self.lines_to_remove = [self.line]
         self.visited_connections = [self.line]
         self.get_every_line_to_remove(self.line)
@@ -201,19 +210,7 @@ class LineRemoveGM(GeneticModifier):
         if len(self.line.connections) == 0:
             return
         self.look_for_line_looping(self.line)
-        self.test()
-        # if self.found is True:
-        #     print('Found')
-        #     self.test()
-        #     #self.only_delete_line()
-        #     #self.safe_remove(self.line, self.lines)
-        #     #self.remove_every_lost_connection()
-        # else:
-        #     print('Not found')
-        #     self.visited_lines = []
-        #     self.delete_everything_connected(self.line)
-        #     self.remove_every_lost_connection()
-        #     self.security_remove()
+        self.apply_remove()
 
     def evolve(self, line, lines):
         if line.id == lines[0].id or len(lines) <= 1:
