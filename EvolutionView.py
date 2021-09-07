@@ -10,6 +10,10 @@ class EvolutionView(tk.Frame):
 
 
     def update_data(self, canvas):
+        for genetic_handler in self.genetic_handlers:
+            if genetic_handler.canvas_handler.id == canvas.id:
+                genetic_handler.reinforce()
+                break
         self.update_with_data(canvas)
 
 

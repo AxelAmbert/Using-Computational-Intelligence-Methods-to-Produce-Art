@@ -13,7 +13,7 @@ def randomize_probability(probability):
 class GeneticModifierHandler:
 
     def init_genetic_modifiers(self):
-        modifiers = [('Creation', 0.005), ('Remove', 0.005), ('Split', 10.01), ('Moving', 0.01)]
+        modifiers = [('Creation', 0.005), ('Remove', 0.005), ('Split', 0.01), ('Moving', 0.01)]
 
         for (modifier_type, probability) in modifiers:
             fullname = 'Line' + modifier_type + 'GM'
@@ -40,10 +40,12 @@ class GeneticModifierHandler:
 
         self.genetic_modifiers.sort(key=self.sort_value, reverse=True)
         for modifier in self.genetic_modifiers:
-            i += 1
             tmp_sum += modifier.probability
             if tmp_sum >= uniform_random:
+                self.last_handler_index = i
                 return modifier
+            i += 1
+        self.last_handler_index = len(self.genetic_modifiers) - 1
         return self.genetic_modifiers[len(self.genetic_modifiers) - 1]
 
     def start_evolution(self):
@@ -52,7 +54,19 @@ class GeneticModifierHandler:
         self.canvas_handler.last_action = type(choice).__name__
         self.canvas_handler.recompute_canvas()
 
+    def reinforce(self):
+        if self.last_handler_index == -1:
+            return
+        for i in range(0, len(self.genetic_modifiers)):
+            rdm = random.uniform(0.0, 1.5)
+            instance = self.genetic_modifiers[i]
+            if i == self.last_handler_index:
+                instance.probability = instance.probability + (rdm * instance.probability / 100)
+            else:
+                instance.probability = instance.probability - (rdm * instance.probability / 100)
+
     def __init__(self, canvas_handler):
         self.genetic_modifiers = []
         self.init_genetic_modifiers()
         self.canvas_handler = canvas_handler
+        self.last_handler_index = -1
